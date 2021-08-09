@@ -1,61 +1,98 @@
-const word_el=document.getElementById("word");
-const popup=document.querySelector(".popup")
-const items=document.querySelectorAll(".item");
-const wrong_letters=document.querySelector(".wrong-letter");
-const correctLetters=[];
-const wrong_letter=[];
-let selectedWord=getrandom();
-function getrandom(){
-    const words=["javascript","python","css","html","java"]
-    return words[Math.floor(Math.random()*words.length)];
+const word_el = document.getElementById('word');
+const popup = document.getElementById('popup-container');
+const message_el = document.getElementById('success-message');
+const wrongLetters_el = document.getElementById('wrong-letters');
+const items = document.querySelectorAll('.item');
+const message = document.getElementById('message');
+const PlayAgainBtn = document.getElementById('play-again');
+
+const correctLetters = [];
+const wrongLetters = [];
+let selectedWord = getRandomWord();
+
+function getRandomWord() {
+    const words = ["javascript","java","python","css","html"];
+    return words[Math.floor(Math.random() * words.length)];
 }
-function updatewrongletter(){
-    wrong_letters.innerHTML = `
-        ${wrong_letter.length>0?'<h3>Hatalı harfler</h3>':''}
-        ${wrong_letter.map(letter=> `<span>${letter}<span>`)}
-    `;
-    items.forEach((item,index)=>{
-        const errorcount=wrong_letter.length;
-        if(index<errorcount){
-            item.style.display='block';
-        }else{
-            item.style.display='none';
-        }
-    })
-}
-function displayword(){
+
+function displayWord() {    
     word_el.innerHTML = `
         ${selectedWord.split('').map(letter => `
             <div class="letter">
                 ${correctLetters.includes(letter) ? letter: ''}
             </div>
-        `).join("")}
-        
-    
+        `).join('')}    
     `;
-    console.log(selectedWord);
-    const w=(word_el.innerText.replace(/\n/g,""));
-    if(w===selectedWord){
-        popup.style.display="flex";
+
+    const w = word_el.innerText.replace(/\n/g,'');
+    if (w === selectedWord) {
+        popup.style.display = 'flex';
+        message_el.innerText = 'Tebrikler kazandınız.';
     }
 }
-window.addEventListener("keydown",function(e){
-    if(e.keyCode>=65 && e.keyCode<=98){
-        const letter=e.key;
-        if(selectedWord.includes(letter)){
-            if(!correctLetters.includes(letter)){
+
+function updateWrongLetters() {
+    wrongLetters_el.innerHTML = `
+        ${wrongLetters.length>0?'<h3>Hatalı harfler</h3>':''}
+        ${wrongLetters.map(letter=> `<span>${letter}<span>`)}
+    `;
+
+    items.forEach((item,index) => {
+        const errorCount = wrongLetters.length;
+
+        if (index<errorCount) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    })
+
+    if(wrongLetters.length === items.length) {
+        popup.style.display = 'flex';
+        message_el.innerText = 'Maalesef Kaybettiniz.';
+    }
+}
+
+function displayMessage() {    
+    message.classList.add('show');
+
+    setTimeout(function() {
+        message.classList.remove('show');
+    }, 2000);
+}
+
+PlayAgainBtn.addEventListener('click', function() {
+    correctLetters.splice(0);
+    wrongLetters.splice(0);
+    
+    selectedWord = getRandomWord();
+    displayWord();
+    updateWrongLetters();
+
+    popup.style.display = 'none';
+});
+
+window.addEventListener('keydown', function(e) {
+    if (e.keyCode >= 65 && e.keyCode <= 90) {        
+        const letter = e.key;
+
+        if (selectedWord.includes(letter)) {
+            if (!correctLetters.includes(letter)) {
                 correctLetters.push(letter);
-                displayword();
-            }else{
-                console.log("bu harfi zaten eklediniz...")
+                displayWord();
+            } else {
+                displayMessage();
             }
-        }else{
-            if(!wrong_letter.includes(letter)){
-                wrong_letter.push(letter);
-                updatewrongletter();
+        } else {
+            if(!wrongLetters.includes(letter)) {
+                wrongLetters.push(letter);
+                updateWrongLetters();
+            }
+            else {
+                displayMessage();
             }
         }
-    
     }
-})
-displayword();
+});
+
+displayWord()
